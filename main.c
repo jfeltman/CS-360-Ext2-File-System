@@ -12,24 +12,7 @@
 #include "ls_cd_pwd.c"
 #include "get_ino.c"
 #include "mkdir.c"
-
-// MINODE minode[NMINODE];
-// MINODE *root;
-//
-// PROC   proc[NPROC], *running;
-// MNTABLE mntable, *mntPtr;
-//
-// SUPER *sp;
-// GD    *gp;
-// INODE *ip;
-//
-// int fd, dev;
-// int nblocks, ninodes, bmap, imap, iblk;
-// char line[128], cmd[32], pathname[64];
-//
-// char gpath[128];   // hold tokenized strings
-// char *name[64];    // token string pointers
-// int  n;            // number of token strings
+#include "creat.c"
 
 MINODE *iget(int dev, int ino)
 {
@@ -141,7 +124,7 @@ main(int argc, char *argv[ ])
 
   //printf("hit a key to continue : "); getchar();
   while(1){
-    printf("input command : [ls|cd|pwd|mkdir|quit] ");
+    printf("input command : [ls|cd|pwd|mkdir|creat|quit] ");
     fgets(line, 128, stdin);
 
     line[strlen(line)-1] = 0;
@@ -161,6 +144,8 @@ main(int argc, char *argv[ ])
       pwd(running->cwd);
     if (strcmp(cmd, "mkdir") == 0)
       make_dir();
+    if (strcmp(cmd, "creat") == 0)
+      creat_file();
 
     if (strcmp(cmd, "quit")==0)
        quit();
