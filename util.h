@@ -36,3 +36,7 @@ int decFreeBlocks(int dev);
 int ialloc(int dev);
 int balloc(int dev);
 int enter_name(MINODE *pip, int myino, char *myname);
+int bdealloc(int dev, int block_num);
+int idealloc(int dev, int myino);
+int incFreeInodes(int dev);
+int incFreeBlocks(int dev);
