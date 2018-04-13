@@ -54,6 +54,10 @@ int remove_dir()
   MINODE *mip, *pip;
   int pino;
   char parent[64], child[32], temp[64];
+  DIR *dp;
+  char *cp;
+  char buf[BLKSIZE];
+  
   strcpy(temp, pathname);
   strcpy(parent, dirname(temp));
   strcpy(temp, pathname);
@@ -69,11 +73,34 @@ int remove_dir()
   }
   if(mip->INODE.i_links_count == 2)
   {
-    if (mip->INODE.i_links_count > 2) //noting in dir
+    //check to see if there are files left in dir
+    if(mip->INODE.i_block[0])
     {
-      printf("DIR NOT EMPTY!\n");
-      return -1;
+      get_block(dev, mip->INODE.i_block[0], buf);
+      cp = buf;
+      dp = (DIR*)buf;
+
+      while (cp < buf + 1024)
+      {
+        strncpy(name, dp->name, dp->name_len);
+        name[dp->name_len] = 0;
+        //printf("dp->name: %s\n", dp->name);
+        if (strcmp(name, ".") != 0 && strcmp(name, "..") != 0)
+        {
+          printf("dir not EMPTY\n");
+          printf("File: %s\n", name);
+          return -1;
+        }
+        cp += dp->rec_len;
+        dp = (DIR*)cp;
+
+      }
     }
+  }
+  if (mip->INODE.i_links_count > 2) //noting in dir
+  {
+    printf("DIR NOT EMPTY!\n");
+    return -1;
   }
   for (int i = 0; i < 12; i++)
   {
