@@ -13,6 +13,7 @@
 #include "get_ino.c"
 #include "mkdir.c"
 #include "creat.c"
+#include "rmdir.c"
 
 MINODE *iget(int dev, int ino)
 {
@@ -146,9 +147,11 @@ main(int argc, char *argv[ ])
       make_dir();
     if (strcmp(cmd, "creat") == 0)
       creat_file();
-
+    if (strcmp(cmd, "rmdir") == 0)
+      rmdir(pathname);
     if (strcmp(cmd, "quit")==0)
        quit();
+
   }
 }
 

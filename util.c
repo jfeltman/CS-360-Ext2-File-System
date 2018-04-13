@@ -265,6 +265,7 @@ int bdealloc(int dev, int block_num)
   put_block(dev, bmap, buf);
   incFreeBlocks(dev);
 }
+
 int idealloc(int dev, int myino)
 {
   char buf[BLKSIZE];
