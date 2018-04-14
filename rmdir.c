@@ -32,6 +32,23 @@ int rm_child(MINODE *parent, char *name)
         printf("cp + cur_rec_len = %d\n", cp+cur_rec_len);
         printf("buf + BLKSIZE = %d\n", buf + BLKSIZE);
 
+        //check to see if dir is first entry in block
+        if(cp == buf && cp + cur_rec_len == buf + BLKSIZE)
+        {
+          char tempbuf[BLKSIZE]; //create a temporary block
+          bdealloc(dev, i); //deallocate the block
+
+          tempParent->INODE.i_size -= BLKSIZE; // reset parent's file size
+          for(int j = i; j < 12; j++) //loop through dirs left in block
+          {
+            get_block(dev, tempParent->INODE.i_block[j], tempbuf); //get the dir
+            put_block(dev, tempParent->INODE.i_block[j+1], tempbuf); //increment by 1 to remove hole
+          }
+
+          tempParent->dirty = 1;
+          return 1;
+        }
+
         // checking if dp is the last dir in the block
         if(cp + cur_rec_len >= buf + BLKSIZE)
         {
