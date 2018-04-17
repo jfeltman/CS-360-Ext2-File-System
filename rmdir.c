@@ -112,7 +112,7 @@ int remove_dir()
   strcpy(child, basename(temp));
 
   // get pathname ino and set dev
-  int ino = getino(&dev, pathname);
+  int ino = getino(dev, pathname);
   // get pathnames MINODE
   mip = iget(dev, ino);
 
@@ -202,7 +202,7 @@ int remove_dir()
     pino = getino(dev, parent);
   }
   printf("pino = %d\n", pino);
-  pip = iget(mip->dev, pino); //gets the parent node
+  pip = iget(dev, pino); //gets the parent node
 
   // call remove child on the child string and parent MINODE
   rm_child(pip, child);
