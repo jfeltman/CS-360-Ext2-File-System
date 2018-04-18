@@ -21,6 +21,7 @@ int mylink()
   if(S_ISDIR(mip->INODE.i_mode))
   {
     printf("Cannot Link to filetype DIR\n");
+    iput(mip);
     return -1;
   }
 
