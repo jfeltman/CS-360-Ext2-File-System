@@ -1,3 +1,63 @@
+void make_dir()
+{
+  MINODE *mip;
+  int pino;
+
+  char parent[64], child[32], temp[64];
+
+  strcpy(temp, pathname);
+  strcpy(parent, dirname(temp)); // get parent path
+  strcpy(temp, pathname);
+  strcpy(child, basename(temp)); // get child
+
+  if(parent[0] == '/')
+  {
+    printf("ROOT START\n");
+    mip = root;
+    dev = root->dev;
+  }
+  else
+  {
+    printf("CWD START\n");
+    mip = running->cwd;
+    dev = running->cwd->dev;
+  }
+
+  printf("parent - %s\n", parent);
+  printf("child - %s\n", child);
+
+  // get parent ino from dev and parent path
+  pino = getino(dev, parent);
+  printf("pino = %d\n", pino);
+  MINODE *pip = iget(dev, pino); // pip is parent minode
+
+  printf("pip->ino = %d\n", pip->ino);
+
+  // make sure pip is a dir
+  if(!S_ISDIR(pip->INODE.i_mode))
+  {
+    printf("Invalid pathname, not a dir!\n");
+    iput(pip);
+    return;
+  }
+
+  // makke sure no dir already exists
+  if(kcwsearch(pip, child) != 0)
+  {
+    printf("Error, Directory already exists!\n");
+    iput(pip);
+    return;
+  }
+  mymkdir(pip, child);
+
+  // incremnt links, touch time and dirty
+  pip->INODE.i_links_count++;
+  pip->INODE.i_atime = time(0L);
+  pip->dirty = 1;
+
+  iput(pip);
+}
+
 int mymkdir(MINODE *pip, char *name)
 {
   // pip points at parent inode, name is child we want to make
@@ -7,13 +67,14 @@ int mymkdir(MINODE *pip, char *name)
   DIR *dp;
   char *cp;
 
+  // allocate a new inode and block
   int ino = ialloc(dev);
   int bno = balloc(dev);
 
-  mip = iget(dev, ino);
+  mip = iget(dev, ino); // mip points at new minode
   INODE *ip = &mip->INODE;
 
-  ip->i_mode = 0x41ED;
+  ip->i_mode = 0x41ED; // dir mode
   ip->i_uid  = running->uid;	// Owner uid
   ip->i_gid  = running->gid;	// Group Id
   ip->i_size = BLKSIZE;		// Size in bytes
@@ -48,75 +109,4 @@ int mymkdir(MINODE *pip, char *name)
   put_block(dev, bno, buf); // write buf to disk block bno
 
   enter_name(pip, ino, name);
-
-  //iput(pip);
-}
-
-void make_dir()
-{
-  MINODE *mip;
-  int pino;
-
-  char parent[64], child[32], temp[64];
-
-  strcpy(temp, pathname);
-  strcpy(parent, dirname(temp));
-  strcpy(temp, pathname);
-  strcpy(child, basename(temp));
-
-  if(strcmp(parent, ".") == 0)
-  {
-    strcpy(parent, "");
-  }
-
-  if(parent[0] == '/')
-  {
-    printf("ROOT START\n");
-    mip = root;
-    dev = root->dev;
-  }
-  else
-  {
-    printf("CWD START\n");
-    mip = running->cwd;
-    dev = running->cwd->dev;
-  }
-
-  printf("parent - %s\n", parent);
-  printf("child - %s\n", child);
-
-  if(strcmp(parent, "") == 0)
-  {
-    pino = running->cwd->ino;
-  }
-  else
-  {
-    pino = getino(dev, parent);
-  }
-  printf("pino = %d\n", pino);
-  MINODE *pip = iget(dev, pino);
-
-  printf("pip->ino = %d\n", pip->ino);
-
-  if(!S_ISDIR(pip->INODE.i_mode))
-  {
-    printf("Invalid pathname, not a dir!\n");
-    iput(pip);
-    return;
-  }
-
-  int check_exists = kcwsearch(pip, child);
-  if(check_exists != 0)
-  {
-    printf("Error, Directory already exists!\n");
-    iput(pip);
-    return;
-  }
-  mymkdir(pip, child);
-
-  pip->INODE.i_links_count += 1;
-  pip->INODE.i_atime = time(0L);
-  pip->dirty = 1;
-
-  iput(pip);
 }

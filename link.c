@@ -1,100 +1,63 @@
-
-
 int mylink()
 {
-  MINODE *mip, *lip;
-  INODE *ilink;
+  MINODE *mip, *pip;
   char oparent[128], oldfile[128], nparent[128], newfile[128], temp[128];
-  int ino = getino(dev, pathname);
-  printf("C ino: %d\n", ino);
 
-  mip = iget(dev, ino);
-  printf("%s\n", pathname);
-  printf("%s\n", link);
-  tokenize(pathname);
+  int ino = getino(dev, pathname); // get the ino of the file we want to link to
+  mip = iget(dev, ino); // points at inode of file we linking to
 
+  //  we have 2 pathnames (pathname and link)
   strcpy(temp, pathname);
-  strcpy(oparent, dirname(temp));
+  strcpy(oparent, dirname(temp)); // oparent is the parent dir of pathname
   strcpy(temp, pathname);
-  strcpy(oldfile, basename(temp));
-  strcpy(temp, pathname);
+  strcpy(oldfile, basename(temp)); // oldfile is the child file of pathname
+
   strcpy(temp, link);
-  strcpy(nparent, dirname(temp));
+  strcpy(nparent, dirname(temp)); // nparent is the parent dir of link
   strcpy(temp, link);
-  strcpy(newfile, basename(temp));
+  strcpy(newfile, basename(temp)); // newfile is the childe file of link
 
-  printf("HERE\n");
+  // chcek if the file is a reg/link and not a dir
   if(S_ISDIR(mip->INODE.i_mode))
   {
     printf("Cannot Link to filetype DIR\n");
     return -1;
   }
 
-  int lino = getino(dev, nparent);
+  // get the parent ino of the old parent dir
+  int pino = getino(dev, nparent);
+  pip = iget(dev, pino); // parent minode
 
-  lip = iget(dev, lino);
-
-  if (kcwsearch(lip, newfile) != 0)
+  // make sure the newfile doesnt already exist
+  if (kcwsearch(pip, newfile) != 0)
   {
     printf("File exists!\n");
     return -1;
   }
+  iput(pip); // put back parent minodes
 
-  link_create(ino);
+  link_create(ino, pino, newfile);
 
-  int test_ino = getino(dev, link);
-  printf("%s ino number: %d\n", oldfile, test_ino);
-  printf("%s ino number: %d\n", newfile, ino);
+  mip->INODE.i_links_count++; //increment links count by 1
 
+  iput(mip); // put back mip
 
+  // int test_ino = getino(dev, link);
+  // printf("%s ino number: %d\n", oldfile, test_ino);
+  // printf("%s ino number: %d\n", newfile, ino);
 }
 
-int link_create(int lino)
+int link_create(int ino, int pino, char *newfile)
 {
   MINODE *mip;
-  int pino;
 
-  char parent[64], child[32], temp[64];
-
-  strcpy(temp, link);
-  strcpy(parent, dirname(temp));
-  strcpy(temp, link);
-  strcpy(child, basename(temp));
-
-  if(strcmp(parent, ".") == 0)
-  {
-    strcpy(parent, "");
-  }
-
-  if(parent[0] == '/')
-  {
-    printf("ROOT START\n");
-    mip = root;
-    dev = root->dev;
-  }
-  else
-  {
-    printf("CWD START\n");
-    mip = running->cwd;
-    dev = running->cwd->dev;
-  }
-
-  printf("parent - %s\n", parent);
-  printf("child - %s\n", child);
-
-  if(strcmp(parent, "") == 0)
-  {
-    pino = running->cwd->ino;
-  }
-  else
-  {
-    pino = getino(dev, parent);
-  }
   printf("pino = %d\n", pino);
+  // get parent minode
   MINODE *pip = iget(dev, pino);
 
   printf("pip->ino = %d\n", pip->ino);
 
+  // make sure parent minode is a dir and not a file
   if(!S_ISDIR(pip->INODE.i_mode))
   {
     printf("Invalid pathname, not a dir!\n");
@@ -102,38 +65,32 @@ int link_create(int lino)
     return;
   }
 
-  int check_exists = kcwsearch(pip, child);
-  if(check_exists != 0)
-  {
-    printf("Error, File already exists!\n");
-    iput(pip);
-    return;
-  }
-  myLink_creat(pip, child, lino);
+  myLink_creat(pip, newfile, ino);
 
+  // touch time and dirty
   pip->INODE.i_atime = time(0L);
   pip->dirty = 1;
 
+  // put back parent minode
   iput(pip);
 }
 
-int myLink_creat(MINODE *pip, char *name, int lino)
+int myLink_creat(MINODE *pip, char *name, int ino)
 {
   MINODE *mip;
-  char buf[BLKSIZE];
-  DIR *dp;
-  char *cp;
 
-  int ino = ialloc(dev);
+  // allocate a new inode number
+  int newIno = ialloc(dev);
 
-  mip = iget(dev, ino);
-  INODE *ip = &mip->INODE;
+  // have mip point at minode pointer of new inode
+  mip = iget(dev, newIno);
+  INODE *ip = &mip->INODE; // ip is mip->INODE
 
-  ip->i_mode = 0x81A4;
+  ip->i_mode = 0x81A4; // file
   ip->i_uid  = running->uid;	// Owner uid
   ip->i_gid  = running->gid;	// Group Id
   ip->i_size = 0;		// Size in bytes
-  ip->i_links_count = 1;	        // Links count=2 because of . and ..
+  ip->i_links_count = 1;
   ip->i_atime = time(0L);  // set to current time
   ip->i_ctime = time(0L);
   ip->i_mtime = time(0L);
@@ -142,10 +99,7 @@ int myLink_creat(MINODE *pip, char *name, int lino)
     ip->i_block[i] = 0;
 
   mip->dirty = 1;
-  iput(mip);
+  iput(mip); // put back mip
 
-  dp = (DIR *)buf;
-  cp = buf;
-
-  enter_name(pip, lino, name);
+  enter_name(pip, ino, name);
 }

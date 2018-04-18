@@ -201,6 +201,7 @@ int enter_name(MINODE *pip, int myino, char *myname)
   MINODE *parent = pip;
   int n_len = strlen(myname);
 
+  // length we need for new dir/file
   int need_length = 4 * ((8 + n_len + 3) / 4);
 
   for(i = 0; i < 12; i++) // search direct blocks only
@@ -210,11 +211,13 @@ int enter_name(MINODE *pip, int myino, char *myname)
       return -1;
     }
 
+    // parents ith block
     get_block(parent->dev, parent->INODE.i_block[i], buf);
 
     dp = (DIR *)buf;
     cp = buf;
 
+    // traverse directories until we reach the last dir
     while(cp + dp->rec_len < buf + BLKSIZE)
     {
       cp+= dp->rec_len;
@@ -223,35 +226,45 @@ int enter_name(MINODE *pip, int myino, char *myname)
 
     ideal_len = 4 * ((8 + dp->name_len + 3) / 4);
 
+    // get the remaining size of dir block
     remain = dp->rec_len - ideal_len;
 
+    // if we have more remaining size than we need we can add dir
     if(remain >= need_length)
     {
+      // set dir rec_len to ideal len
       dp->rec_len = ideal_len;
 
+      // increment dp,cp one more time
       cp += dp->rec_len;
       dp = (DIR *)cp;
 
+      // add new dir/file
       dp->rec_len = remain;
       dp->inode = myino;
       dp->name_len = n_len;
       strncpy(dp->name, myname, n_len);
     }
-    else
+    else // no more room! we need to create a new block
     {
+      // allocate new block
       int bno = balloc(parent->dev);
+      // increse parentes inode size by 1024 (blksize)
       parent->INODE.i_size += 1024;
 
+      // get parents 0th block into buf
       get_block(parent->dev, parent->INODE.i_block[0], buf);
 
       dp = (DIR *)buf;
 
+      // add dir as first item in block
       dp->rec_len = BLKSIZE;
       dp->inode = myino;
       dp->name_len = n_len;
       strncpy(dp->name, myname, n_len);
     }
 
+    // write block back to disk
     put_block(parent->dev, parent->INODE.i_block[i], buf);
   }
 }
