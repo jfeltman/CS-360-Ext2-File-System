@@ -29,9 +29,6 @@ int rm_child(MINODE *parent, char *name)
       {
         cur_rec_len = dp->rec_len;
 
-        printf("cp + cur_rec_len = %d\n", cp+cur_rec_len);
-        printf("buf + BLKSIZE = %d\n", buf + BLKSIZE);
-
         //check to see if dir is first entry in block
         if(cp == buf && cp + cur_rec_len == buf + BLKSIZE)
         {
@@ -129,7 +126,7 @@ int remove_dir()
   strcpy(child, basename(temp));
 
   // get pathname ino and set dev
-  int ino = getino(&dev, pathname);
+  int ino = getino(dev, pathname);
   // get pathnames MINODE
   mip = iget(dev, ino);
 
@@ -142,8 +139,10 @@ int remove_dir()
   // Dir might not be empty, need to check for FILES
   if(mip->INODE.i_links_count == 2)
   {
+    printf("mip->INODE.i_block[0] = %d\n", mip->INODE.i_block[0]);
+
     //check to see if block is not empty
-    if(mip->INODE.i_block[0] == 1)
+    if(mip->INODE.i_block[0] != 0)
     {
       // its nots so get the block and begin to iterate over its DIR
       get_block(dev, mip->INODE.i_block[0], buf);
