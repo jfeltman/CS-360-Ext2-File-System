@@ -10,11 +10,6 @@ void creat_file()
   strcpy(temp, pathname);
   strcpy(child, basename(temp));
 
-  if(strcmp(parent, ".") == 0)
-  {
-    strcpy(parent, "");
-  }
-
   if(parent[0] == '/')
   {
     printf("ROOT START\n");
@@ -31,14 +26,7 @@ void creat_file()
   printf("parent - %s\n", parent);
   printf("child - %s\n", child);
 
-  if(strcmp(parent, "") == 0)
-  {
-    pino = running->cwd->ino;
-  }
-  else
-  {
-    pino = getino(dev, parent);
-  }
+  pino = getino(dev, parent);
   printf("pino = %d\n", pino);
   MINODE *pip = iget(dev, pino);
 
@@ -50,9 +38,7 @@ void creat_file()
     iput(pip);
     return;
   }
-
-  int check_exists = kcwsearch(pip, child);
-  if(check_exists != 0)
+  if(kcwsearch(pip, child) != 0)
   {
     printf("Error, File already exists!\n");
     iput(pip);
@@ -69,16 +55,13 @@ void creat_file()
 int my_creat(MINODE *pip, char *name)
 {
     MINODE *mip;
-    char buf[BLKSIZE];
-    DIR *dp;
-    char *cp;
 
     int ino = ialloc(dev);
 
     mip = iget(dev, ino);
     INODE *ip = &mip->INODE;
 
-    ip->i_mode = 0x81A4;
+    ip->i_mode = 0x81A4; // file size
     ip->i_uid  = running->uid;	// Owner uid
     ip->i_gid  = running->gid;	// Group Id
     ip->i_size = 0;		// Size in bytes
@@ -92,9 +75,6 @@ int my_creat(MINODE *pip, char *name)
 
     mip->dirty = 1;
     iput(mip);
-
-    dp = (DIR *)buf;
-    cp = buf;
 
     enter_name(pip, ino, name);
 }

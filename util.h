@@ -18,7 +18,7 @@ INODE *ip;
 
 int fd, dev;
 int nblocks, ninodes, bmap, imap, iblk;
-char line[128], cmd[32], pathname[64];
+char line[128], cmd[32], pathname[64], link[64];
 
 char gpath[128];   // hold tokenized strings
 char *name[64];    // token string pointers

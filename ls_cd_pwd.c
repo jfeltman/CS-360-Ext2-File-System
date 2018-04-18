@@ -150,13 +150,13 @@ int ls_file(MINODE *mip, char *name)
      ss[12] = 0;
 
      printf("%s", ss);
-     printf("%8ld",   mip->INODE.i_size);
+     printf("%8ld ",   mip->INODE.i_size);
 
-     printf("%s\n", name);
+     printf("%4s\n", name);
 
      if (S_ISLNK(mode))
         printf(" -> %s", (char *)mip->INODE.i_block);
-     printf("\n");
+     //printf("\n");
 }
 
 int ls_dir(MINODE *mip)
@@ -190,7 +190,7 @@ int ls_dir(MINODE *mip)
 	}
 	************/
         dip = iget(dev, dp->inode);
-        my_ls_file(dip, temp);
+        ls_file(dip, temp);
         iput(dip);
 
         cp += dp->rec_len;
@@ -217,7 +217,7 @@ int list_file()
     mip = iget(dev, ino);
     mode = mip->INODE.i_mode;
     if (!S_ISDIR(mode))
-      my_ls_file(mip, (char *)basename(pathname));
+      ls_file(mip, (char *)basename(pathname));
     else
       ls_dir(mip);
     iput(mip);
