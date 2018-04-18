@@ -14,6 +14,7 @@
 #include "mkdir.c"
 #include "creat.c"
 #include "rmdir.c"
+#include "link.c"
 
 MINODE *iget(int dev, int ino)
 {
@@ -125,7 +126,7 @@ main(int argc, char *argv[ ])
 
   //printf("hit a key to continue : "); getchar();
   while(1){
-    printf("input command : [ls|cd|pwd|mkdir|creat|quit] ");
+    printf("input command : [ls|cd|pwd|mkdir|creat|rmdir|link|quit] ");
     fgets(line, 128, stdin);
 
     line[strlen(line)-1] = 0;
@@ -133,9 +134,12 @@ main(int argc, char *argv[ ])
     if (line[0]==0)
       continue;
     pathname[0] = 0;
+    link[0] = 0;
 
-    sscanf(line, "%s %s", cmd, pathname);
-    printf("cmd=%s pathname=%s\n", cmd, pathname);
+    sscanf(line, "%s %s %s", cmd, pathname, link);
+
+
+    printf("cmd=%s pathname=%s link=%s\n", cmd, pathname, link);
 
     if (strcmp(cmd, "ls")==0)
        list_file();
@@ -149,6 +153,8 @@ main(int argc, char *argv[ ])
       creat_file();
     if (strcmp(cmd, "rmdir") == 0)
       remove_dir();
+    if(strcmp(cmd, "link") == 0)
+      mylink();
     if (strcmp(cmd, "quit")==0)
        quit();
 
