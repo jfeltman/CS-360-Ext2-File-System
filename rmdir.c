@@ -15,6 +15,11 @@ int remove_dir()
 
   // get pathname ino and set dev
   int ino = getino(dev, pathname);
+  if(ino == 0)
+  {
+    printf("wrong pathname!\n");
+    return -1;
+  }
   // get pathnames MINODE
   mip = iget(dev, ino);
 

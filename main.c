@@ -128,7 +128,7 @@ main(int argc, char *argv[ ])
 
   //printf("hit a key to continue : "); getchar();
   while(1){
-    printf("input command : [ls|cd|pwd|mkdir|creat|rmdir|link|unlink|quit] ");
+    printf("input command : [ls|cd|pwd|mkdir|creat|rmdir|link|unlink|symlink|quit] ");
     fgets(line, 128, stdin);
 
     line[strlen(line)-1] = 0;
@@ -161,6 +161,8 @@ main(int argc, char *argv[ ])
       myUnlink();
     if(strcmp(cmd, "touch") == 0)
       touch();
+    if(strcmp(cmd, "symlink") == 0)
+      mySymLink();
     if (strcmp(cmd, "quit")==0)
        quit();
 
