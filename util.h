@@ -40,3 +40,4 @@ int bdealloc(int dev, int block_num);
 int idealloc(int dev, int myino);
 int incFreeInodes(int dev);
 int incFreeBlocks(int dev);
+int truncate(MINODE *mip);

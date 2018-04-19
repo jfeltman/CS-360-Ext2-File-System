@@ -34,48 +34,7 @@ int myUnlink()
   if(mip->INODE.i_links_count == 0)
   {
     printf("Inodes link count is 0, deallocating blocks and inode!\n");
-
-    for (int i = 0; i < 15; i++)
-    {
-      if (mip->INODE.i_block[i] == 0)
-      {
-        continue;
-      }
-      bdealloc(mip->dev, mip->INODE.i_block[i]);
-    }
-    if(mip->INODE.i_block[12] != 0) // there are indirect blocks to deallocate
-    {
-      int ibuf[256];
-      get_block(mip->dev, mip->INODE.i_block[12], ibuf);
-      for(int i = 0; i < 256; i++)
-      {
-        if(ibuf[i] == 0)
-          continue;
-        bdealloc(mip->dev, ibuf[i]);
-      }
-    }
-    if(mip->INODE.i_block[13] != 0) // double indirect blocks
-    {
-      int ibuf[256];
-      int tempBuf[256];
-      get_block(mip->dev, mip->INODE.i_block[13], ibuf);
-      for(int i = 0; i < 256; i++)
-      {
-        if(ibuf[i] != 0)
-        {
-          get_block(mip->dev, ibuf[i], tempBuf);
-          for(int j = 0; j < 256; j++)
-          {
-            if(tempBuf[j] == 0)
-              continue;
-            bdealloc(mip->dev, tempBuf[j]);
-          }
-          bdealloc(mip->dev, ibuf[i]);
-        }
-      }
-    }
-    // dealloc the inode
-    idealloc(mip->dev, mip->ino);
+    truncate(mip);
   }
   iput(mip); // write mip back to disk
 
