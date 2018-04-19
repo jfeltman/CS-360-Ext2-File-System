@@ -152,11 +152,11 @@ int ls_file(MINODE *mip, char *name)
      printf("%s", ss);
      printf("%8ld ",   mip->INODE.i_size);
 
-     printf("%4s\n", name);
+     printf("%4s", name);
 
      if (S_ISLNK(mode))
         printf(" -> %s", (char *)mip->INODE.i_block);
-     //printf("\n");
+     printf("\n");
 }
 
 int ls_dir(MINODE *mip)

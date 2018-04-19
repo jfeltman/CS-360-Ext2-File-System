@@ -4,6 +4,12 @@ int mylink()
   char oparent[128], oldfile[128], nparent[128], newfile[128], temp[128];
 
   int ino = getino(dev, pathname); // get the ino of the file we want to link to
+
+  if(ino == 0)
+  {
+    printf("wrong pathname!\n");
+    return -1;
+  }
   mip = iget(dev, ino); // points at inode of file we linking to
 
   //  we have 2 pathnames (pathname and link)
@@ -103,4 +109,103 @@ int myLink_creat(MINODE *pip, char *name, int ino)
   iput(mip); // put back mip
 
   enter_name(pip, ino, name);
+}
+
+int mySymLink()
+{
+  MINODE *mip, *pip;
+  char newParent[64], newFile[60], temp[128];
+  int pathLen;
+
+  // get ino of pathname
+  int ino = getino(dev, pathname);
+  if(ino == 0) // check if path is right
+  {
+    printf("wrong pathname!\n");
+    return -1;
+  }
+  mip = iget(dev, ino); // get minode of pathname
+
+  // check to make sure that the pathname is a dir or a reg file
+  if(!S_ISREG(mip->INODE.i_mode) && (!S_ISDIR(mip->INODE.i_mode)))
+  {
+    printf("Error! Pathname needs to be a file or dir!\n");
+    iput(mip);
+    return -1;
+  }
+  iput(mip); // write mip back to disk
+
+  strcpy(temp, link);
+  strcpy(newParent, dirname(temp)); // 2nd arg directory
+  strcpy(temp, link);
+  strcpy(newFile, basename(temp)); // 2nd arg child
+
+  // get parent MINODE of the 2nd argument
+  int pino = getino(dev, newParent);
+  pip = iget(dev, pino);
+
+  // make sure the path is a directory
+  if(!S_ISDIR(pip->INODE.i_mode))
+  {
+    printf("2nd parameter path is not a directory!\n");
+    iput(pip);
+    return -1;
+  }
+
+  // make sure file doesnt already exist
+  if(kcwsearch(pip, newFile) != 0)
+  {
+    printf("error file already exists!\n");
+    iput(pip);
+    return -1;
+  }
+
+  // creat the new file in parent directory
+  my_creat(pip, newFile);
+
+  // touch pip and write it back to disk
+  pip->INODE.i_atime = time(0L);
+  pip->dirty = 1;
+  iput(pip);
+
+  // now get ino of newfile we just created and get is minode pointer
+  int newIno = getino(dev, link);
+  mip = iget(dev, newIno);
+
+  pathLen = strlen(pathname);
+
+  mip->INODE.i_mode = 0xA1FF; // set mode to link (LNK)
+  // copy pathname into inodes i_block
+  strncpy((char *)mip->INODE.i_block, pathname, pathLen);
+  mip->INODE.i_size = pathLen; // set size to len of pathnmae
+
+  iput(mip); //write back to disk
+}
+
+// not sure if we need to make this a command in main, but it works
+char *readlink(char *path)
+{
+  MINODE *mip;
+  int ino = getino(dev, path);
+  char *content;
+
+  if(ino == 0)
+  {
+    printf("error, wrong path!\n");
+    return -1;
+  }
+
+  mip = iget(dev, ino);
+
+  if(!S_ISLNK(mip->INODE.i_mode))
+  {
+    printf("Error, not a symlink file!\n");
+    iput(mip);
+    return -1;
+  }
+
+  content = (char *)mip->INODE.i_block;
+  iput(mip);
+
+  return content;
 }
