@@ -128,7 +128,9 @@ main(int argc, char *argv[ ])
 
   //printf("hit a key to continue : "); getchar();
   while(1){
-    printf("input command : [ls|cd|pwd|mkdir|creat|rmdir|link|unlink|symlink|quit] ");
+    printf("**Commands**\n");
+    printf("[ls|cd|pwd|mkdir|creat|rmdir|link|unlink|symlink|touch|chmod|stat|quit]\n");
+    printf("input command : ");
     fgets(line, 128, stdin);
 
     line[strlen(line)-1] = 0;
@@ -139,33 +141,36 @@ main(int argc, char *argv[ ])
     link[0] = 0;
 
     sscanf(line, "%s %s %s", cmd, pathname, link);
-
-
     printf("cmd=%s pathname=%s link=%s\n", cmd, pathname, link);
 
-    if (strcmp(cmd, "ls")==0)
-       list_file();
-    if (strcmp(cmd, "cd")==0)
-       change_dir();
-    if (strcmp(cmd, "pwd")==0)
+    if(strcmp(cmd, "ls")==0)
+      list_file();
+    if(strcmp(cmd, "cd")==0)
+      change_dir();
+    if(strcmp(cmd, "pwd")==0)
       pwd(running->cwd);
-    if (strcmp(cmd, "mkdir") == 0)
+    if(strcmp(cmd, "mkdir") == 0)
       make_dir();
-    if (strcmp(cmd, "creat") == 0)
+    if(strcmp(cmd, "creat") == 0)
       creat_file();
-    if (strcmp(cmd, "rmdir") == 0)
+    if(strcmp(cmd, "rmdir") == 0)
       remove_dir();
     if(strcmp(cmd, "link") == 0)
       mylink();
     if(strcmp(cmd, "unlink") == 0)
       myUnlink();
-    if(strcmp(cmd, "touch") == 0)
-      touch();
     if(strcmp(cmd, "symlink") == 0)
       mySymLink();
-    if (strcmp(cmd, "quit")==0)
-       quit();
-
+    if(strcmp(cmd, "touch") == 0)
+      touch();
+    if(strcmp(cmd, "chmod") == 0)
+      my_chmod();
+    if(strcmp(cmd, "stat") == 0)
+      my_stat();
+    if(strcmp(cmd, "rm") == 0)
+      myUnlink();
+    if(strcmp(cmd, "quit")==0)
+      quit();
   }
 }
 

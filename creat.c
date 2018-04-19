@@ -61,7 +61,7 @@ int my_creat(MINODE *pip, char *name)
     mip = iget(dev, ino);
     INODE *ip = &mip->INODE;
 
-    ip->i_mode = 0x81A4; // file size
+    ip->i_mode = 0x81A4; // file type - REG FILE
     ip->i_uid  = running->uid;	// Owner uid
     ip->i_gid  = running->gid;	// Group Id
     ip->i_size = 0;		// Size in bytes
