@@ -16,6 +16,7 @@
 #include "rmdir.c"
 #include "link.c"
 #include "unlink.c"
+#include "touch.c"
 
 MINODE *iget(int dev, int ino)
 {
@@ -158,6 +159,8 @@ main(int argc, char *argv[ ])
       mylink();
     if(strcmp(cmd, "unlink") == 0)
       myUnlink();
+    if(strcmp(cmd, "touch") == 0)
+      touch();
     if(strcmp(cmd, "symlink") == 0)
       mySymLink();
     if (strcmp(cmd, "quit")==0)
