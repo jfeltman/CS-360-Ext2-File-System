@@ -17,6 +17,7 @@
 #include "link.c"
 #include "unlink.c"
 #include "touch.c"
+#include "open_close.c"
 
 MINODE *iget(int dev, int ino)
 {
@@ -129,7 +130,8 @@ main(int argc, char *argv[ ])
   //printf("hit a key to continue : "); getchar();
   while(1){
     printf("**Commands**\n");
-    printf("[ls|cd|pwd|mkdir|creat|rmdir|link|unlink|symlink|touch|chmod|stat|quit]\n");
+    printf("[ls|cd|pwd|mkdir|creat|rmdir|link|unlink|symlink|\n");
+    printf("|touch|chmod|stat|open|close|pfd|quit]\n");
     printf("input command : ");
     fgets(line, 128, stdin);
 
@@ -169,6 +171,12 @@ main(int argc, char *argv[ ])
       my_stat();
     if(strcmp(cmd, "rm") == 0)
       myUnlink();
+    if(strcmp(cmd, "open") == 0)
+      open_file();
+    if(strcmp(cmd, "pfd") == 0)
+      pfd();
+    if(strcmp(cmd, "close") == 0)
+      close_file();
     if(strcmp(cmd, "quit")==0)
       quit();
   }
