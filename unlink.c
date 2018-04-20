@@ -35,6 +35,8 @@ int myUnlink()
   {
     printf("Inodes link count is 0, deallocating blocks and inode!\n");
     truncate(mip);
+    // dealloc the inode
+    idealloc(mip->dev, mip->ino);
   }
   iput(mip); // write mip back to disk
 

@@ -330,6 +330,9 @@ int truncate(MINODE *mip)
       }
     }
   }
-  // dealloc the inode
-  idealloc(mip->dev, mip->ino);
+  mip->INODE.i_atime = time(0L);
+  mip->INODE.i_mtime = time(0L);
+  mip->INODE.i_ctime = time(0L);
+  mip->INODE.i_size = 0;
+  mip->dirty = 1;
 }
