@@ -18,6 +18,7 @@
 #include "unlink.c"
 #include "touch.c"
 #include "open_close.c"
+#include "read.c"
 
 MINODE *iget(int dev, int ino)
 {
@@ -172,13 +173,17 @@ main(int argc, char *argv[ ])
     if(strcmp(cmd, "rm") == 0)
       myUnlink();
     if(strcmp(cmd, "open") == 0)
-      open_file();
+      fd = open_file();
     if(strcmp(cmd, "pfd") == 0)
       pfd();
     if(strcmp(cmd, "close") == 0)
       close_file();
+    if(strcmp(cmd, "read")==0)
+      read_file();
     if(strcmp(cmd, "quit")==0)
       quit();
+
+
   }
 }
 
