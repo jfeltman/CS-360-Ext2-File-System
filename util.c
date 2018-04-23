@@ -336,3 +336,28 @@ int truncate(MINODE *mip)
   mip->INODE.i_size = 0;
   mip->dirty = 1;
 }
+
+int my_lseek(int fd, int position)
+{
+  int original_position;
+
+  if(running->fd[fd] == NULL)
+  {
+    printf("Error, bad fd!\n");
+    return -1;
+  }
+
+  OFT *oftp = &running->fd[fd];
+  // check if position over runs either end of file
+  if(oftp->mptr->INODE.i_size < position)
+  {
+    printf("Error, postion greater than file size!\n");
+    return -1;
+  }
+
+  original_position = oftp->offset;
+  // set offset to position
+  oftp->offset = position;
+
+  return original_position;
+}
