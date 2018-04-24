@@ -337,9 +337,17 @@ int truncate(MINODE *mip)
   mip->dirty = 1;
 }
 
-int my_lseek(int fd, int position)
+int my_lseek()
 {
   int original_position;
+  int fd, position;
+
+  sscanf(pathname, "%d", &fd);
+  sscanf(link, "%d", &position);
+
+  printf("lseek fd = %d\n", fd);
+  printf("lseek position = %d\n", position);
+
 
   if(running->fd[fd] == NULL)
   {
@@ -347,7 +355,7 @@ int my_lseek(int fd, int position)
     return -1;
   }
 
-  OFT *oftp = &running->fd[fd];
+  OFT *oftp = running->fd[fd];
   // check if position over runs either end of file
   if(oftp->mptr->INODE.i_size < position)
   {
@@ -356,6 +364,7 @@ int my_lseek(int fd, int position)
   }
 
   original_position = oftp->offset;
+  printf("og position = %d\n", original_position);
   // set offset to position
   oftp->offset = position;
 

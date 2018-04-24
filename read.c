@@ -1,36 +1,32 @@
-
-
 int read_file()
 {
-
   char filename[128], temp[128];
-  char *buf[BLKSIZE];
-  int nbytes;
-
+  char buf[BLKSIZE];
+  int nbytes, count;
 
   strcpy(temp, pathname);
   strcpy(filename, temp); //puts the file name in filename
 
-
-/*  if (!isdigit(link))
-  {
-    printf("Cannot read %s bytes from file\n", link);
-    return -1;
-  }*/
-
   sscanf(link, "%d", &nbytes);
   //printf("%d\n", running->fd[fd]);
   printf("Pass\n");
-  if (running->fd[fd] == NULL)
+  if (running->fd[fd] == NULL || (running->fd[fd]->mode != 0 && running->fd[fd]->mode != 2))
   {
-    printf("File not open\n");
+    printf("File not opened for Read\n");
+    return -1;
   }
-    printf("%d\n", nbytes);
-    printf("************ %s ************\n", filename);
-  return (myread(fd, buf, nbytes));
 
+  printf("%d\n", nbytes);
+  count = myread(fd, buf, nbytes);
+
+  printf("************ %s ************\n", filename);
+  printf("%s", buf);
+  printf("\n");
+  printf("*********************************\n");
+  printf("myread: read %d char from file descriptor %d\n", count, fd);
+
+  return count;
 }
-
 
 int myread(int fd, char *buf, int nbytes)
 {
@@ -40,20 +36,20 @@ int myread(int fd, char *buf, int nbytes)
   int count = 0;
   int lbk, startbyte, blk, remain, dblk;
   int ibuf[256], dbuf[256];
-  char *readbuf[BLKSIZE];
+  char readbuf[BLKSIZE];
 
   oftp = running->fd[fd]; //sets the oft
   mip = oftp->mptr; //sets a mip
 
   int avail = mip->INODE.i_size - oftp->offset; //mip->INODE.i_size = filesize
-
-
+  //printf("avail = %d\n", avail);
 
   char *cq = buf;
 
   while (nbytes && avail)
   {
     lbk = oftp->offset / BLKSIZE;
+    //printf("lbk = %d\n", lbk);
     startbyte = oftp->offset % BLKSIZE;
 
     if (lbk < 12 ) //direct blocks
@@ -93,12 +89,8 @@ int myread(int fd, char *buf, int nbytes)
       }
 
     }
-    printf("%s", readbuf); //prints whats in the file up to the certain point
-
+    buf[count] = NULL;
   }
-  printf("\n");
-  printf("*********************************\n");
-  printf("myread: read %d char from file descriptor %d\n", count, fd);
-  return count;
 
+  return count;
 }
