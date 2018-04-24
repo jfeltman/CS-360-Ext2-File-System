@@ -19,12 +19,8 @@
 #include "touch.c"
 #include "open_close.c"
 #include "read.c"
-<<<<<<< HEAD
-#include "cat.c"
-=======
 #include "write.c"
 #include "cat_cp.c"
->>>>>>> f461a70c023c438b99df59ee109f8725cb9594e9
 
 MINODE *iget(int dev, int ino)
 {
@@ -186,10 +182,6 @@ main(int argc, char *argv[ ])
       close_file();
     if(strcmp(cmd, "read")==0)
       read_file();
-<<<<<<< HEAD
-    if (strcmp(cmd, "cat") == 0)
-      cat();
-=======
     if(strcmp(cmd, "write") == 0)
       write_file();
     if(strcmp(cmd, "lseek") == 0)
@@ -200,7 +192,6 @@ main(int argc, char *argv[ ])
       my_cp();
     if(strcmp(cmd, "mv") == 0)
       mv();
->>>>>>> f461a70c023c438b99df59ee109f8725cb9594e9
     if(strcmp(cmd, "quit")==0)
       quit();
   }
