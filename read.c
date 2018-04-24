@@ -24,7 +24,7 @@ int read_file()
   printf("\n");
   printf("*********************************\n");
   printf("myread: read %d char from file descriptor %d\n", count, fd);
-
+  memset(buf, 0, BLKSIZE);
   return count;
 }
 
@@ -34,7 +34,7 @@ int myread(int fd, char *buf, int nbytes)
   OFT *oftp;
 
   int count = 0;
-  int lbk, startbyte, blk, remain, dblk;
+  int lbk, startbyte, blk, remain, dblk, copyBits;
   int ibuf[256], dbuf[256];
   char readbuf[BLKSIZE];
 
@@ -77,18 +77,35 @@ int myread(int fd, char *buf, int nbytes)
     char *cp = readbuf + startbyte;
     remain = BLKSIZE - startbyte;
 
-    while (remain > 0)
-    {
-      *cq++ = *cp++;
-      oftp->offset++; //increment the offset
-      count++; //increment the count
-      avail--; nbytes--; remain--; //decrement avail, bytes, and remain
-      if (nbytes <= 0 || avail <= 0) //check to see if we've reached the end
-      {
-        break;
-      }
+    printf("remain = %d\n", remain);
+    printf("nbytes = %d\n", nbytes);
+    printf("avail = %d\n", avail);
 
+    if (avail < nbytes)
+      copyBits = avail;
+    else
+      copyBits = nbytes;
+
+    printf("copyBits = %d\n", copyBits);
+    //strcpy(buf, readbuf);
+    strncpy(buf, cp, copyBits);
+
+    count += copyBits;
+    remain -= copyBits;
+    nbytes -= copyBits;
+    avail -= copyBits;
+    oftp->offset += copyBits;
+
+    if (nbytes <= 0 || avail <= 0) //check to see if we've reached the end
+    {
+      break;
     }
+
+      //*cq++ = *cp++;
+       //increment the offset
+   //increment the count
+       //decrement avail, bytes, and remain
+
     buf[count] = NULL;
   }
 
