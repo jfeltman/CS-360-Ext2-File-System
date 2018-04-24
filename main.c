@@ -19,6 +19,7 @@
 #include "touch.c"
 #include "open_close.c"
 #include "read.c"
+#include "cat.c"
 
 MINODE *iget(int dev, int ino)
 {
@@ -180,6 +181,8 @@ main(int argc, char *argv[ ])
       close_file();
     if(strcmp(cmd, "read")==0)
       read_file();
+    if (strcmp(cmd, "cat") == 0)
+      cat();
     if(strcmp(cmd, "quit")==0)
       quit();
 
