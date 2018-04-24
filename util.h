@@ -41,4 +41,4 @@ int idealloc(int dev, int myino);
 int incFreeInodes(int dev);
 int incFreeBlocks(int dev);
 int truncate(MINODE *mip);
-int my_lseek(int fd, int position);
+int my_lseek();

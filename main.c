@@ -18,6 +18,9 @@
 #include "unlink.c"
 #include "touch.c"
 #include "open_close.c"
+#include "read.c"
+#include "write.c"
+#include "cat_cp.c"
 
 MINODE *iget(int dev, int ino)
 {
@@ -130,8 +133,8 @@ main(int argc, char *argv[ ])
   //printf("hit a key to continue : "); getchar();
   while(1){
     printf("**Commands**\n");
-    printf("[ls|cd|pwd|mkdir|creat|rmdir|link|unlink|symlink|\n");
-    printf("|touch|chmod|stat|open|close|pfd|quit]\n");
+    printf("[ls|cd|pwd|mkdir|creat|rmdir|link|unlink|symlink|touch\n");
+    printf("|chmod|stat|open|close|pfd|read|write|lseek|cat|cp|mv|quit]\n");
     printf("input command : ");
     fgets(line, 128, stdin);
 
@@ -172,11 +175,23 @@ main(int argc, char *argv[ ])
     if(strcmp(cmd, "rm") == 0)
       myUnlink();
     if(strcmp(cmd, "open") == 0)
-      open_file();
+      fd = open_file();
     if(strcmp(cmd, "pfd") == 0)
       pfd();
     if(strcmp(cmd, "close") == 0)
       close_file();
+    if(strcmp(cmd, "read")==0)
+      read_file();
+    if(strcmp(cmd, "write") == 0)
+      write_file();
+    if(strcmp(cmd, "lseek") == 0)
+      my_lseek();
+    if(strcmp(cmd, "cat") == 0)
+      cat();
+    if(strcmp(cmd, "cp") == 0)
+      my_cp();
+    if(strcmp(cmd, "mv") == 0)
+      mv();
     if(strcmp(cmd, "quit")==0)
       quit();
   }
