@@ -85,12 +85,12 @@ int myread(int fd, char *buf, int nbytes)
     avail -= copyBits;
     oftp->offset += copyBits;
 
+    buf[count] = NULL;
+
     if (nbytes <= 0 || avail <= 0) //check to see if we've reached the end
     {
       break;
     }
-
-    buf[count] = NULL;
   }
 
   return count;
