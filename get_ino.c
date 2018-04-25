@@ -1,28 +1,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
-
 #include <ext2fs/ext2_fs.h>
 #include <string.h>
 #include <libgen.h>
 #include <sys/stat.h>
-//#include "type.h"
-
 
 extern MINODE minode[ ];
 extern PROC *running;
 extern int fd, dev;
 extern int bmap, imap, iblk;
 
-
 extern char gpath[128];   // hold tokenized strings
 extern char *name[64];    // token string pointers
 extern int  n;            // number of token strings
-
-/*
-char kcwnames[64][128],*kcwname[64];
-int  kcwn;
-*/
 
 // return minode pointer to loaded INODE
 MINODE *kcwiget(int dev, int ino)
@@ -33,19 +24,20 @@ MINODE *kcwiget(int dev, int ino)
   int blk, disp;
   INODE *ip;
 
+  // search the MINODE array for a MINODE that has the same dev & ino
   for (i=0; i<NMINODE; i++){
     mip = &minode[i];
-    if (mip->dev == dev && mip->ino == ino){
+    if (mip->dev == dev && mip->ino == ino){ // found the MINODE
        mip->refCount++;
        //printf("found [%d %d] at minode[%d]: return its addr\n", dev, ino, i);
        return mip;
     }
   }
 
+  // Search MINODE array for a MINODE with refcount = 0
   for (i=0; i<NMINODE; i++){
     mip = &minode[i];
     if (mip->refCount == 0){
-       //printf("load INODE=[%d %d] into minode[%d]\n", dev, ino, i);
        mip->refCount = 1;
        mip->dev = dev;
        mip->ino = ino;
@@ -54,8 +46,7 @@ MINODE *kcwiget(int dev, int ino)
        blk  = (ino-1)/8 + iblk;
        disp = (ino-1) % 8;
 
-       //printf("iget: ino=%d blk=%d disp=%d\n", ino, blk, disp);
-
+       // get blk into buf
        get_block(dev, blk, buf);
        ip = (INODE *)buf + disp;
        // copy INODE to mp->INODE
@@ -81,9 +72,9 @@ kcwiput(MINODE *mip)
  if (mip->refCount > 0) return;
  if (!mip->dirty)       return;
 
- /* write back */
- //printf("KCWiput: dev=%d ino=%d\n", mip->dev, mip->ino);
+ /* write back to disk*/
 
+ // mailmans
  block =  ((mip->ino - 1) / 8) + iblk;
  offset =  (mip->ino - 1) % 8;
 
@@ -93,6 +84,7 @@ kcwiput(MINODE *mip)
  ip = (INODE *)buf + offset;
  *ip = mip->INODE;
 
+ // write the block back to disk
  put_block(mip->dev, block, buf);
 
 }
@@ -134,8 +126,6 @@ int kcwsearch(MINODE *mip, char *name)
         printf("search: i=%d  i_block[%d]=%d\n", i, i, ip->i_block[i]);
         if (ip->i_block[i] == 0)
            return 0;
-
-	//getchar();
 
         get_block(dev, ip->i_block[i], sbuf);
         dp = (DIR *)sbuf;
