@@ -7,24 +7,21 @@ int read_file()
   strcpy(temp, pathname);
   strcpy(filename, temp); //puts the file name in filename
 
-  sscanf(link, "%d", &nbytes);
-  //printf("%d\n", running->fd[fd]);
+  sscanf(link, "%d", &nbytes); // takes the 2nd parameter and makes it an int
+
   printf("Pass\n");
   if (running->fd[fd] == NULL || (running->fd[fd]->mode != 0 && running->fd[fd]->mode != 2))
   {
     printf("File not opened for Read\n");
     return -1;
   }
-
-  printf("%d\n", nbytes);
-  count = myread(fd, buf, nbytes);
+  count = myread(fd, buf, nbytes); // call read to get count as well as set the buf
 
   printf("************ %s ************\n", filename);
-  printf("%s", buf);
-  printf("\n");
+  printf("%s\n", buf);
   printf("*********************************\n");
   printf("myread: read %d char from file descriptor %d\n", count, fd);
-  memset(buf, 0, BLKSIZE);
+  memset(buf, 0, BLKSIZE); // reset buf
   return count;
 }
 
@@ -38,18 +35,16 @@ int myread(int fd, char *buf, int nbytes)
   int ibuf[256], dbuf[256];
   char readbuf[BLKSIZE];
 
-  oftp = running->fd[fd]; //sets the oft
-  mip = oftp->mptr; //sets a mip
+  oftp = running->fd[fd]; //sets the oftp to the running opened file
+  mip = oftp->mptr; //sets a mip to ofts MINODE
 
   int avail = mip->INODE.i_size - oftp->offset; //mip->INODE.i_size = filesize
-  //printf("avail = %d\n", avail);
 
   char *cq = buf;
 
   while (nbytes && avail)
   {
     lbk = oftp->offset / BLKSIZE;
-    //printf("lbk = %d\n", lbk);
     startbyte = oftp->offset % BLKSIZE;
 
     if (lbk < 12 ) //direct blocks
@@ -77,17 +72,11 @@ int myread(int fd, char *buf, int nbytes)
     char *cp = readbuf + startbyte;
     remain = BLKSIZE - startbyte;
 
-    printf("remain = %d\n", remain);
-    printf("nbytes = %d\n", nbytes);
-    printf("avail = %d\n", avail);
-
     if (avail < nbytes)
       copyBits = avail;
     else
       copyBits = nbytes;
 
-    printf("copyBits = %d\n", copyBits);
-    //strcpy(buf, readbuf);
     strncpy(buf, cp, copyBits);
 
     count += copyBits;
@@ -100,11 +89,6 @@ int myread(int fd, char *buf, int nbytes)
     {
       break;
     }
-
-      //*cq++ = *cp++;
-       //increment the offset
-   //increment the count
-       //decrement avail, bytes, and remain
 
     buf[count] = NULL;
   }

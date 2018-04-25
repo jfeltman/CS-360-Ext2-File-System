@@ -1,9 +1,7 @@
 int cat()
 {
-  char mybuf[BLKSIZE], dummy = 0;
-  int n;
-  int i = 0;
-
+  char mybuf[BLKSIZE];
+  int n, i = 0;
   // put link as 0 so when we call open it, opens with mode 0 (read)
   strcpy(link, "0");
 
@@ -46,9 +44,8 @@ int my_cp()
     printf("No dest_file, creating new one!\n");
     strcpy(temp, pathname);
     strcpy(pathname, dst_file);
-    printf("new path = %s\n", pathname);
-    creat_file();
-    strcpy(pathname, temp);
+    creat_file(); // creat the empty dst file
+    strcpy(pathname, temp); // reset path
   }
 
   // open src_file for read
@@ -74,7 +71,7 @@ int my_cp()
 
 int mv()
 {
-  MINODE *mip, *mip2;
+  MINODE *mip;
   int ino;
 
   ino = getino(dev, pathname);
@@ -85,10 +82,10 @@ int mv()
   }
   mip = iget(dev, ino);
 
+  // check if src dev == cur dev?
   if(mip->dev == running->cwd->dev)
   {
     mylink(); // link src and dst
-
     strcpy(link, "");
     myUnlink(); // unlink src
   }
@@ -99,5 +96,5 @@ int mv()
     myUnlink(); // unlink src
   }
 
-  iput(mip);
+  iput(mip); // put back mip
 }

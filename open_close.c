@@ -72,7 +72,7 @@ int open_file()
       oftp->offset = 0;
       break;
     case 3: // APPEND
-      oftp->offset = mip->INODE.i_size;
+      oftp->offset = mip->INODE.i_size; // offset starts at end of file!
       break;
     default:
       printf("Invalid mode!\n");
@@ -88,7 +88,6 @@ int open_file()
       break;
     }
   }
-
   // set running->fd[i] equal to oftp
   running->fd[i] = oftp;
 

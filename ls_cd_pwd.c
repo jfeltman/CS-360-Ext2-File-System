@@ -3,13 +3,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
-
 #include <ext2fs/ext2_fs.h>
 #include <string.h>
 #include <libgen.h>
 #include <sys/stat.h>
 
-//#include "type.h"
 #include "util.h"
 
 extern MINODE minode[NMINODE];
@@ -56,6 +54,7 @@ change_dir()
   int dev, ino;
   char c;
 
+  // if not path set running cwd to root MINODE
   if (pathname[0] == 0){
      iput(running->cwd);
      running->cwd = iget(root->dev, 2);
@@ -82,7 +81,7 @@ change_dir()
   newip = iget(dev, ino);    /* get inode of this ino */
 
   printf("mode=%4x   ", newip->INODE.i_mode);
-  //if ( (newip->INODE.i_mode & 0040000) == 0){
+
   if (!S_ISDIR(newip->INODE.i_mode)){
      printf("%s is not a directory\n", pathname);
      iput(newip);
@@ -95,14 +94,6 @@ change_dir()
   printf("after cd : cwd = [%d %d]\n", running->cwd->dev, running->cwd->ino);
 }
 
-int my_ls_file(MINODE *mip, char *name)
-{
-  printf("%s\n", name);
-
-  return 0;
-}
-
-
 int ls_file(MINODE *mip, char *name)
 {
   int k;
@@ -114,10 +105,10 @@ int ls_file(MINODE *mip, char *name)
       putchar('d');
   else if (S_ISLNK(mode))
       putchar('l');
-  else
+  else // reg file
       putchar('-');
 
-   mask = 000400;
+   mask = 000400; // bitwise operation to print out permssions
    for (k=0; k<3; k++){
       if (mode & mask)
          putchar('r');
@@ -154,7 +145,7 @@ int ls_file(MINODE *mip, char *name)
 
      printf("%4s", name);
 
-     if (S_ISLNK(mode))
+     if (S_ISLNK(mode)) // if symlink print file its linked to
         printf(" -> %s", (char *)mip->INODE.i_block);
      printf("\n");
 }
@@ -175,23 +166,16 @@ int ls_dir(MINODE *mip)
      get_block(mip->dev, mip->INODE.i_block[i], sbuf);
      dp = (DIR *)sbuf;
      cp = sbuf;
-     //        printf("   i_number rec_len name_len   name\n");
 
+     // step through each dir
      while (cp < sbuf + BLKSIZE){
         strncpy(temp, dp->name, dp->name_len);
         temp[dp->name_len] = 0;
-        //  printf("%8d%8d%8u        %s\n",
-        //        dp->inode, dp->rec_len, dp->name_len,temp);
-	/************
-        if (strcmp(temp, ".")==0 || strcmp(temp, "..")==0){
-           cp += dp->rec_len;
-           dp = (DIR *)cp;
-	   continue;
-	}
-	************/
+
+        // get each files MINODE
         dip = iget(dev, dp->inode);
-        ls_file(dip, temp);
-        iput(dip);
+        ls_file(dip, temp); // call ls_file on it
+        iput(dip); // dispose of MINODE
 
         cp += dp->rec_len;
         dp = (DIR *)cp;
@@ -205,21 +189,23 @@ int list_file()
   u16 mode;
   int dev, ino;
 
+  // no path so just ls the root dir
   if (pathname[0] == 0)
     ls_dir(running->cwd);
   else{
     dev = root->dev;
-    ino = getino(dev, pathname);
+    ino = getino(dev, pathname); // get ino of pathname
     if (ino==0){
       printf("no such file %s\n", pathname);
       return -1;
     }
+    // get pathnames MINODE and mode
     mip = iget(dev, ino);
     mode = mip->INODE.i_mode;
-    if (!S_ISDIR(mode))
+    if (!S_ISDIR(mode)) // file
       ls_file(mip, (char *)basename(pathname));
     else
-      ls_dir(mip);
+      ls_dir(mip); // dir
     iput(mip);
   }
 }
@@ -234,15 +220,15 @@ int rpwd(MINODE *wd)
   if (wd == root)
       return;
 
-  parentino = findino(wd, &myino);
-  parent = iget(dev, parentino);
+  parentino = findino(wd, &myino); // find parent ino
+  parent = iget(dev, parentino); // get parent MINODE
 
-  findmyname(parent, myino, myname);
+  findmyname(parent, myino, myname); // get the name
   // recursively call rpwd()
   rpwd(parent);
 
   iput(parent);
-  printf("/%s", myname);
+  printf("/%s", myname); //print out name found
 
   return 1;
 }

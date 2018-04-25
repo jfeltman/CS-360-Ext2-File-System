@@ -14,9 +14,8 @@ int write_file()
 
   nbytes = strlen(buf) - 1;
   buf[nbytes] = NULL;
-  //printf("nbytes = %d\n", nbytes);
 
-  return(myWrite(fd, buf, nbytes));
+  return(myWrite(fd, buf, nbytes)); // returns count of bits written
 }
 
 int myWrite(int fd, char *buf, int nbytes)
@@ -28,21 +27,21 @@ int myWrite(int fd, char *buf, int nbytes)
   int lbk, blk, startByte, ibuf[256], remain, copyBits;
   int count = 0;
 
-  oftp = running->fd[fd];
-  mip = oftp->mptr;
+  oftp = running->fd[fd]; // get running opened file
+  mip = oftp->mptr; // get opened files MINODE
 
   while(nbytes > 0)
   {
-    lbk = oftp->offset / BLKSIZE;
-    startByte = oftp->offset % BLKSIZE;
+    lbk = oftp->offset / BLKSIZE; // logical block size
+    startByte = oftp->offset % BLKSIZE; // startbyte is for appending to a file
 
     if(lbk < 12) // direct blocks
     {
       if(mip->INODE.i_block[lbk] == 0)
       {
-        mip->INODE.i_block[lbk] = balloc(mip->dev);
+        mip->INODE.i_block[lbk] = balloc(mip->dev); // if no block allocate a new one
       }
-      blk = mip->INODE.i_block[lbk];
+      blk = mip->INODE.i_block[lbk]; // set blk to new logical block
     }
     else if(lbk >= 12 && lbk < 256 + 12) // indriect blocks
     {
@@ -88,13 +87,13 @@ int myWrite(int fd, char *buf, int nbytes)
     get_block(mip->dev, blk, wbuf);   // read disk block into wbuf[ ]
     char *cp = wbuf + startByte;      // cp points at startByte in wbuf[]
     remain = BLKSIZE - startByte;     // number of BYTEs remain in this block
-    printf("remain = %d\n", remain);
 
     if(remain < nbytes)
       copyBits = remain;
     else
       copyBits = nbytes;
 
+    // copy into cp (which is wbuf) the string we wrote
     strncpy(cp, buf, copyBits);
     count += copyBits;
     remain -= copyBits;
@@ -103,7 +102,7 @@ int myWrite(int fd, char *buf, int nbytes)
     {
       mip->INODE.i_size += copyBits;    // inc file size (if offset > fileSize)
     }
-    nbytes -= copyBits;
+    nbytes -= copyBits; // decrement nbytes by copybit
 
     put_block(mip->dev, blk, wbuf);   // write wbuf[ ] to disk
   }

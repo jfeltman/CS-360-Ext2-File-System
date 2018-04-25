@@ -303,11 +303,11 @@ int truncate(MINODE *mip)
   {
     int ibuf[256];
     get_block(mip->dev, mip->INODE.i_block[12], ibuf);
-    for(int i = 0; i < 256; i++)
+    for(int i = 0; i < 256; i++) // indirect has 256 blocks, so go through all
     {
-      if(ibuf[i] == 0)
+      if(ibuf[i] == 0) // empty block
         continue;
-      bdealloc(mip->dev, ibuf[i]);
+      bdealloc(mip->dev, ibuf[i]); // deallocate a block if it is not empty
     }
   }
   if(mip->INODE.i_block[13] != 0) // double indirect blocks
@@ -315,21 +315,22 @@ int truncate(MINODE *mip)
     int ibuf[256];
     int tempBuf[256];
     get_block(mip->dev, mip->INODE.i_block[13], ibuf);
-    for(int i = 0; i < 256; i++)
+    for(int i = 0; i < 256; i++) // 256 indirect blocks
     {
       if(ibuf[i] != 0)
       {
         get_block(mip->dev, ibuf[i], tempBuf);
-        for(int j = 0; j < 256; j++)
+        for(int j = 0; j < 256; j++) // each 256 indirect has 256 double indirect blocks
         {
           if(tempBuf[j] == 0)
             continue;
-          bdealloc(mip->dev, tempBuf[j]);
+          bdealloc(mip->dev, tempBuf[j]); // deallocate block
         }
-        bdealloc(mip->dev, ibuf[i]);
+        bdealloc(mip->dev, ibuf[i]); // deallocate full block
       }
     }
   }
+  // touch mips teime and set it dirty
   mip->INODE.i_atime = time(0L);
   mip->INODE.i_mtime = time(0L);
   mip->INODE.i_ctime = time(0L);
@@ -342,12 +343,9 @@ int my_lseek()
   int original_position;
   int fd, position;
 
+  // scan in fd and position
   sscanf(pathname, "%d", &fd);
   sscanf(link, "%d", &position);
-
-  printf("lseek fd = %d\n", fd);
-  printf("lseek position = %d\n", position);
-
 
   if(running->fd[fd] == NULL)
   {
@@ -363,8 +361,8 @@ int my_lseek()
     return -1;
   }
 
+  // get the position of the opened files offset
   original_position = oftp->offset;
-  printf("og position = %d\n", original_position);
   // set offset to position
   oftp->offset = position;
 
