@@ -45,43 +45,11 @@ int myWrite(int fd, char *buf, int nbytes)
     }
     else if(lbk >= 12 && lbk < 256 + 12) // indriect blocks
     {
-      if(mip->INODE.i_block[12] == 0)
-      {
-        mip->INODE.i_block[12] = balloc(mip->dev);
-        // zero out the block on disk?
-      }
-      get_block(fd, mip->INODE.i_block[12], ibuf);
-      blk = ibuf[lbk - 12];
 
-      if(blk == 0)
-      {
-        blk = balloc(dev);
-        mip->INODE.i_block[12] = blk;
-      }
     }
     else // double indirect blocks
     {
-      int dbuf[256], dblk;
-      if(mip->INODE.i_block[13] == 0)
-      {
-        mip->INODE.i_block[13] = balloc(mip->dev);
-      }
 
-      get_block(fd, mip->INODE.i_block[13], ibuf);
-      lbk -= (12 + 256);
-      dblk = ibuf[lbk/256];
-
-      if(dblk == 0)
-      {
-        dblk = balloc(dev);
-      }
-      get_block(fd, dblk, dbuf);
-      blk = dbuf[lbk % 256];
-
-      if(blk == 0)
-      {
-        blk = balloc(dev);
-      }
     }
 
     get_block(mip->dev, blk, wbuf);   // read disk block into wbuf[ ]

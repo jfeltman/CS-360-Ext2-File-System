@@ -54,17 +54,10 @@ int myread(int fd, char *buf, int nbytes)
     else if (lbk >= 12 && lbk < 256 + 12)
     {
       //indirect blocks
-      get_block(fd, mip->INODE.i_block[12], ibuf); //get the indirect block
-      blk = ibuf[lbk - 12]; //get the correct block num from the indirect block
     }
     else
     {
       //double indirect
-      get_block(fd, mip->INODE.i_block[13], dbuf); //get the D-indirect block
-      lbk -= (12+256);
-      dblk = dbuf[lbk / 256];
-      get_block(fd, dblk, dbuf);
-      blk = dbuf[lbk % 256];
     }
 
     get_block(mip->dev, blk, readbuf); //get the information from the file into readbuf
